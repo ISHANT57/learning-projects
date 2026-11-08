@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """One-off generator for assets/alarm.wav and assets/icon.ico (needs Pillow).
 
 The generated files are shipped in assets/, so this only needs re-running if
@@ -39,6 +41,28 @@ def make_wav(path, rate=22050):
         w.setsampwidth(2)
         w.setframerate(rate)
         w.writeframes(b"".join(struct.pack("<h", int(s * 32767)) for s in samples))
+    add_wav_info(path, {
+        b"INAM": "Inactivity Alarm",
+        b"IART": "Ishant",
+        b"ICOP": "(c) 2026 IMPS. All rights reserved.",
+        b"ICMT": "Fingerprint: IMPS-IA-E91E8AB6F47B4248",
+    })
+
+
+def add_wav_info(path, tags):
+    """Append a standard RIFF LIST/INFO chunk (visible in file Properties > Details)."""
+    body = b"INFO"
+    for key, text in tags.items():
+        data = text.encode("ascii") + b"\x00"
+        if len(data) % 2:
+            data += b"\x00"  # chunks are word-aligned
+        body += key + struct.pack("<I", len(data)) + data
+    with open(path, "r+b") as f:
+        f.seek(0, 2)
+        f.write(b"LIST" + struct.pack("<I", len(body)) + body)
+        size = f.tell() - 8
+        f.seek(4)
+        f.write(struct.pack("<I", size))  # fix the RIFF size
 
 
 def make_icon(path):

@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """Constants and a tiny JSON settings file (stored in %APPDATA%\\InactivityAlarm)."""
 
 import json
@@ -6,7 +8,15 @@ from dataclasses import asdict, dataclass
 
 APP_NAME = "Inactivity Alarm"
 APP_VERSION = "1.1.0"          # used by build.py for the exe and installer
-PUBLISHER = "Inactivity Alarm"  # shown in exe properties and Settings > Apps
+
+# Ownership - shown in the app, the exe/installer properties and Settings > Apps.
+AUTHOR = "Ishant"                # "Made by ..." credit
+PUBLISHER = "IMPS"               # copyright owner / publisher
+COPYRIGHT = "© 2026 IMPS. All rights reserved."
+HOMEPAGE = "https://github.com/ISHANT57/learning-projects"
+# Unique ID embedded in the source, the exe ("Comments" field), the alarm sound
+# and the docs - search for it to find copies of this app.
+FINGERPRINT = "IMPS-IA-E91E8AB6F47B4248"
 
 PRESET_MINUTES = (1, 2, 5, 10, 15)
 DEFAULT_MINUTES = 5

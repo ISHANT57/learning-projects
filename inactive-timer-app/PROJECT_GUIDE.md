@@ -383,6 +383,8 @@ The **only** file written is the small settings file.
 | **Inno Setup** | Tool that builds Windows installers from a `.iss` script. |
 | **JSON** | Simple text format for storing data. |
 | **Latch** | A flag that stays set until a specific reset condition. |
+| **Fingerprint / watermark** | A unique hidden marker that proves where a copy came from. |
+| **License** | The legal terms that say what others may and may not do with your work. |
 | **Mutex** | A Windows lock; a named one lets us detect another running copy. |
 | **Named event** | A Windows on/off signal shared by name between programs (used to say "show your window"). |
 | **Background app** | An app that keeps running with its window hidden, usually from the system tray. |
@@ -423,7 +425,17 @@ The **only** file written is the small settings file.
 
 ---
 
-## 15. Command cheat sheet
+## 15. Ownership, license and fingerprint
+
+The app is **made by Ishant, © 2026 IMPS. All rights reserved.** (see `LICENSE`).
+
+- **Visible credit:** the window footer, the installer, Settings → Apps (publisher **IMPS**) and the exe's Properties → Details.
+- **License:** "all rights reserved". People may view and learn from the code and use official releases, but copying or redistributing it needs permission. The installer shows the license before installing.
+- **Fingerprint** `IMPS-IA-E91E8AB6F47B4248`: a unique ID hidden in every source file header, the exe's *Comments* field, the alarm sound's metadata and these docs. If you find a suspicious copy, look for it. Search GitHub code for it to find copied repos.
+
+**Concept: watermarking vs DRM.** A watermark doesn't stop copying. It proves *where something came from*. Truly preventing copying (DRM, obfuscation) is complex and can still be broken. For a learning project, clear credit + a license + a fingerprint is the practical balance.
+
+## 16. Command cheat sheet
 
 ```powershell
 # run from source

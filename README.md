@@ -4,7 +4,7 @@ A collection of small projects I build to learn new tools, languages and concept
 
 | Project | What it is | Tech |
 |---------|------------|------|
-| [Inactive Timer App](inactive-timer-app/) | Windows app that sounds an alarm when you haven't touched the keyboard or mouse for a set time. Runs in the background from the system tray. | Python, Tkinter, Windows API, PyInstaller, Inno Setup |
+| [Inactive Timer App](inactive-timer-app/) | Windows app that sounds an alarm when you haven't touched the keyboard or mouse for a set time. Runs in the background from the system tray. [Download](https://github.com/ISHANT57/learning-projects/releases/tag/inactive-timer-app-v1.1.0) | Python, Tkinter, Windows API, PyInstaller, Inno Setup |
 
 ## Repository layout
 
@@ -14,3 +14,7 @@ learning-projects/
 ```
 
 New projects get their own folder and a row in the table above.
+
+## License
+
+Each project has its own `LICENSE` file. Unless a project says otherwise, all work here is **© 2026 IMPS. All rights reserved.** Made by Ishant.

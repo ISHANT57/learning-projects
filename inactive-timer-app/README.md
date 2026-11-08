@@ -1,10 +1,30 @@
 # Inactivity Alarm
 
+**Made by Ishant · © 2026 IMPS. All rights reserved.**
+
 A tiny Windows utility that plays an alarm when you haven't touched the keyboard or mouse for a set number of minutes.
 
 - Python 3 + Tkinter, a single small window, runs from the system tray.
 - Uses the Windows `GetLastInputInfo` API, which only reports **when** the last input happened.
 - Polls once per second, and only while monitoring is on. Measured at about 0.2–0.4 % of one CPU core.
+
+## Ownership, license and fingerprint
+
+**Made by Ishant · © 2026 IMPS. All rights reserved.** See [LICENSE](LICENSE). You may view and study the code and use the official releases. Copying, redistributing or selling it needs written permission.
+
+Every copy of this app carries the fingerprint **`IMPS-IA-E91E8AB6F47B4248`** in several places, so copies can be traced:
+
+| Where | How to check |
+|-------|--------------|
+| App window | Footer shows *Made by Ishant · © 2026 IMPS* |
+| `.exe` and `Setup.exe` properties | Right-click → **Properties → Details** (Copyright, Company, Comments), or in PowerShell: `(Get-Item InactivityAlarm.exe).VersionInfo \| Format-List CompanyName, LegalCopyright, Comments` |
+| Settings → Apps | Publisher **IMPS**, with a link to this repo |
+| Installer | Shows the license page before installing |
+| Every source file | Copyright and fingerprint header on the first lines |
+| `assets/alarm.wav` | Copyright, artist and fingerprint in the file's metadata |
+| Search for copies | Search GitHub code for `IMPS-IA-E91E8AB6F47B4248` |
+
+These marks make copying **detectable and provable**. They can't make it impossible, because anyone with the code can edit it.
 
 ## Privacy
 

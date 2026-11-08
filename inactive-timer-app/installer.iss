@@ -1,9 +1,23 @@
-; Inno Setup script - built by build.py (which passes AppVersion/AppPublisher).
+; Inactivity Alarm installer - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+; Fingerprint: IMPS-IA-E91E8AB6F47B4248
+; Built by build.py (which passes AppVersion/AppPublisher/AppCopyright/AppURL/AppComments).
 #ifndef AppVersion
   #define AppVersion "1.0.0"
 #endif
 #ifndef AppPublisher
   #define AppPublisher "Inactivity Alarm"
+#endif
+#ifndef AppCopyright
+  #define AppCopyright "(c) 2026 IMPS. All rights reserved."
+#endif
+#ifndef AppURL
+  #define AppURL "https://github.com/ISHANT57/learning-projects"
+#endif
+#ifndef AppComments
+  #define AppComments "Made by Ishant."
+#endif
+#ifndef AppFingerprint
+  #define AppFingerprint "IMPS-IA-E91E8AB6F47B4248"
 #endif
 #define AppName "Inactivity Alarm"
 #define AppExe "InactivityAlarm.exe"
@@ -14,6 +28,13 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher={#AppPublisher}
+AppPublisherURL={#AppURL}
+AppSupportURL={#AppURL}
+AppCopyright={#AppCopyright}
+AppComments={#AppComments}
+VersionInfoCompany={#AppPublisher}
+VersionInfoCopyright={#AppCopyright}
+VersionInfoDescription={#AppName} Setup {#AppFingerprint}
 VersionInfoVersion={#AppVersion}
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
@@ -25,6 +46,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=release
 OutputBaseFilename=InactivityAlarm-Setup-{#AppVersion}
 SetupIconFile=assets\icon.ico
+LicenseFile=LICENSE
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 Compression=lzma2/max

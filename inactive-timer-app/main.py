@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """Inactivity Alarm - plays an alarm after N minutes without keyboard/mouse input."""
 
 import argparse
@@ -209,6 +211,12 @@ class App:
                                      activebackground="#b91c1c", activeforeground="white",
                                      relief="flat", bd=0, cursor="hand2", pady=p(8))
         # dismiss_btn is only packed while an alarm is active
+
+        # Ownership credit (always last in the window)
+        self.credit_label = tk.Label(root, text=f"Made by {config.AUTHOR}  ·  © 2026 {config.PUBLISHER}"
+                                          f"  ·  v{config.APP_VERSION}",
+                                     bg=BG, fg=MUTED, font=(FONT, 8))
+        self.credit_label.pack(side="bottom", pady=(0, p(8)))
 
     def _render(self):
         """Refresh status card, buttons and tray tooltip from current state."""

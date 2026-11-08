@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """System-wide idle detection via the Windows GetLastInputInfo API.
 
 Privacy: GetLastInputInfo only reports *when* the last keyboard/mouse input

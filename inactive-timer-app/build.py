@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """Build the shareable release files into release/:
 
   InactivityAlarm-Setup-<version>.exe     installer (recommended for sharing)
@@ -29,6 +31,8 @@ VERSION_TEMPLATE = """VSVersionInfo(
   kids=[
     StringFileInfo([StringTable('040904B0', [
       StringStruct('CompanyName', {pub!r}),
+      StringStruct('LegalCopyright', {copy!r}),
+      StringStruct('Comments', {comments!r}),
       StringStruct('FileDescription', {app!r}),
       StringStruct('FileVersion', {ver!r}),
       StringStruct('InternalName', {name!r}),
@@ -47,7 +51,9 @@ def write_version_file() -> str:
     path = os.path.join(BUILD, "version_info.txt")
     with open(path, "w", encoding="utf-8") as f:
         f.write(VERSION_TEMPLATE.format(t=tuple(parts), pub=config.PUBLISHER, app=config.APP_NAME,
-                                        ver=VERSION, name=NAME, exe=NAME + ".exe"))
+                                        ver=VERSION, name=NAME, exe=NAME + ".exe",
+                                        copy=config.COPYRIGHT,
+                                        comments=f"Made by {config.AUTHOR}. Fingerprint: {config.FINGERPRINT}"))
     return path
 
 
@@ -99,6 +105,9 @@ def main() -> int:
         return 1
     print("== Building installer")
     subprocess.run([iscc, "/Q", f"/DAppVersion={VERSION}", f"/DAppPublisher={config.PUBLISHER}",
+                    f"/DAppCopyright={config.COPYRIGHT}", f"/DAppURL={config.HOMEPAGE}",
+                    f"/DAppComments=Made by {config.AUTHOR}. Fingerprint: {config.FINGERPRINT}",
+                    f"/DAppFingerprint={config.FINGERPRINT}",
                     os.path.join(HERE, "installer.iss")], check=True)
     print("   ->", os.path.join(RELEASE, f"{NAME}-Setup-{VERSION}.exe"))
 

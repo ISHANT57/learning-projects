@@ -1,3 +1,5 @@
+# Inactivity Alarm - (c) 2026 IMPS. All rights reserved. Made by Ishant.
+# Fingerprint: IMPS-IA-E91E8AB6F47B4248 - see LICENSE.
 """Render PROJECT_GUIDE.md into a polished PDF: "Inactivity Alarm - Project Guide.pdf".
 
 Uses reportlab + Windows fonts (Segoe UI, Consolas). ASCII diagrams in the
@@ -514,7 +516,7 @@ class GuideDoc(BaseDocTemplate):
     def __init__(self, path, title, intro):
         super().__init__(path, pagesize=A4, leftMargin=MARGIN_X, rightMargin=MARGIN_X,
                          topMargin=24 * mm, bottomMargin=20 * mm, title=f"{title}",
-                         author=config.PUBLISHER, subject="How the Inactivity Alarm app works",
+                         author=f"{config.AUTHOR} ({config.PUBLISHER})", subject="How the Inactivity Alarm app works", keywords=config.FINGERPRINT,
                          creator="make_guide_pdf.py")
         self.guide_title, self.intro, self.icon = title, intro, icon_reader()
         frame = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id="f",
@@ -575,7 +577,7 @@ class GuideDoc(BaseDocTemplate):
         # footer facts
         c.setStrokeColor(LINE)
         c.line(MARGIN_X, 32 * mm, PAGE_W - MARGIN_X, 32 * mm)
-        facts = [("Version", config.APP_VERSION), ("Platform", "Windows 10 / 11 (64-bit)"),
+        facts = [("Version", config.APP_VERSION), ("Made by", f"{config.AUTHOR}  ·  © 2026 {config.PUBLISHER}"),
                  ("Updated", date.today().strftime("%B %Y"))]
         colw = CONTENT_W / len(facts)
         for k, (label, value) in enumerate(facts):
@@ -601,7 +603,7 @@ class GuideDoc(BaseDocTemplate):
         c.line(MARGIN_X, top - 5, PAGE_W - MARGIN_X, top - 5)
         c.line(MARGIN_X, 13 * mm, PAGE_W - MARGIN_X, 13 * mm)
         c.setFont("Segoe", 8)
-        c.drawString(MARGIN_X, 8.5 * mm, f"Version {config.APP_VERSION}")
+        c.drawString(MARGIN_X, 8.5 * mm, f"Version {config.APP_VERSION}  ·  Made by {config.AUTHOR}  ·  {config.COPYRIGHT}")
         c.drawRightString(PAGE_W - MARGIN_X, 8.5 * mm, f"Page {doc.page - 1}")
         c.restoreState()
 
