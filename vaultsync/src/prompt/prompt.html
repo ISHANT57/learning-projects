@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- VaultSync - (c) 2026 IMPS. All rights reserved. Made by Ishant. Fingerprint: IMPS-VS-5FA22D0791658C41 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Save password?</title>
+    <link rel="stylesheet" href="./prompt.css" />
+  </head>
+  <body>
+    <div class="card" id="card" hidden>
+      <button class="close" id="btn-close" title="Close" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+
+      <!-- Illustration: a masked password with a shield, in VaultSync colours -->
+      <svg class="art" viewBox="0 0 360 110" aria-hidden="true">
+        <path d="M70 70c-8-28 22-50 52-44 14-20 52-24 70-6 22-10 56 2 60 26 26 2 36 30 18 44-14 12-38 10-52 4-22 14-66 16-84 2-26 6-56-2-64-26z" fill="#3730a3" />
+        <rect x="88" y="40" width="168" height="36" rx="8" fill="#166534" />
+        <circle cx="108" cy="58" r="7" fill="#a5b4fc" />
+        <path d="M124 51l7 5-3 8h-8l-3-8z" fill="#a5b4fc" />
+        <circle cx="148" cy="58" r="7" fill="#a5b4fc" />
+        <rect x="161" y="51" width="14" height="14" rx="4" fill="#818cf8" />
+        <circle cx="190" cy="58" r="7" fill="none" stroke="#86efac" stroke-width="3" />
+        <circle cx="190" cy="58" r="2.5" fill="#86efac" />
+        <path d="M208 51l7 4v6l-7 4-7-4v-6z" fill="none" stroke="#86efac" stroke-width="2.5" />
+        <circle cx="232" cy="58" r="6.5" fill="none" stroke="#16a34a" stroke-width="3" />
+        <path d="M262 18l18 7v13c0 12-8 20-18 24-10-4-18-12-18-24V25z" fill="#a5b4fc" />
+        <path d="M254 39l6 6 11-12" fill="none" stroke="#312e81" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M46 34l10-4 7 8-4 10-11 1-5-8z" fill="#166534" />
+        <circle cx="62" cy="20" r="5" fill="#1e3a8a" />
+        <circle cx="300" cy="74" r="5" fill="#1e3a8a" />
+        <path d="M288 90l8-4 7 5-1 9-9 3-6-6z" fill="#166534" />
+      </svg>
+
+      <div class="title-row">
+        <img src="/icons/icon48.png" alt="" width="22" height="22" />
+        <h1 id="title">Save password?</h1>
+      </div>
+      <p class="site" id="site"></p>
+
+      <form id="form" novalidate>
+        <div class="row">
+          <label for="username">Username</label>
+          <input id="username" type="text" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="row">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input id="password" type="password" autocomplete="off" spellcheck="false" />
+            <button type="button" class="eye" id="btn-eye" title="Show password" aria-label="Show password">
+              <svg viewBox="0 0 24 24" aria-hidden="true" id="eye-open"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true" id="eye-off" hidden><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-3.2 3.9M6.5 7.6C3.8 9.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1" /><path d="M9.9 10a3 3 0 0 0 4.1 4.1" /></svg>
+            </button>
+          </div>
+        </div>
+        <div class="error" id="error" role="alert"></div>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="btn-never">Never</button>
+          <span class="spacer"></span>
+          <button type="submit" class="btn primary" id="btn-save">Save</button>
+          <button type="button" class="btn ghost" id="btn-dismiss">No thanks</button>
+        </div>
+      </form>
+
+      <div class="done" id="done" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        <span id="done-text">Password saved</span>
+      </div>
+
+      <footer class="footer">
+        Passwords are saved to <strong>VaultSync</strong>, encrypted with your master password.
+        <span class="credit">Made by Ishant · © 2026 IMPS</span>
+      </footer>
+    </div>
+    <script type="module" src="./prompt.ts"></script>
+  </body>
+</html>

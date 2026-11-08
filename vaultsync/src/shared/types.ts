@@ -23,6 +23,8 @@ export interface Credential {
 export interface Vault {
   version: 1;
   credentials: Credential[];
+  /** Sites the user chose "Never" for. Kept inside the encrypted vault (private). */
+  neverSave?: string[];
 }
 
 /** What the popup list receives - never includes passwords. */
@@ -59,6 +61,8 @@ export interface Settings {
   autoLockMinutes: number;
   autoFill: boolean;
   activityLog: boolean;
+  /** Show a "Save password?" prompt instead of saving silently. */
+  askToSave: boolean;
 }
 
 export interface SyncStatus {
@@ -105,3 +109,22 @@ export interface AppState {
 }
 
 export type UpsertResult = 'new' | 'updated' | 'unchanged';
+
+/** A captured login waiting for the user's decision in the save prompt (RAM only). */
+export interface SaveOffer {
+  tabId: number;
+  host: string;
+  scheme: 'https' | 'http';
+  username: string;
+  password: string;
+  kind: 'new' | 'update';
+  createdAt: number;
+}
+
+/** What the prompt iframe receives. */
+export interface SaveOfferView {
+  host: string;
+  username: string;
+  password: string;
+  kind: 'new' | 'update';
+}

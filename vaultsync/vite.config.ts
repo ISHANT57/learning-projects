@@ -45,6 +45,11 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       sourcemap: false,
       emptyOutDir: true,
+      rollupOptions: {
+        // The "Save password?" prompt is only referenced from web_accessible_resources,
+        // so it must be listed here to be bundled like the popup and options pages.
+        input: { prompt: 'src/prompt/prompt.html' },
+      },
     },
   };
 });

@@ -56,14 +56,37 @@ async function savedLogins(): Promise<string[]> {
   return hosts.map((h, i) => `${h.trim()} ${users[i]?.trim() ?? ''}`);
 }
 
-async function login(url: string, username: string, password: string): Promise<void> {
+type Answer = 'Save' | 'Never' | 'No thanks';
+
+/** Answers the "Save password?" prompt (an extension iframe) and returns its title. */
+async function answerPrompt(page: Page, answer: Answer, edits: { username?: string } = {}): Promise<string> {
+  const prompt = page.frameLocator('iframe[data-vaultsync-prompt]');
+  await expect(prompt.locator('#card')).toBeVisible();
+  const title = await prompt.locator('#title').innerText();
+  await expect(prompt.locator('#password')).toHaveAttribute('type', 'password'); // masked by default
+  if (edits.username !== undefined) await prompt.locator('#username').fill(edits.username);
+  await prompt.getByRole('button', { name: answer, exact: true }).click();
+  await expect(page.locator('iframe[data-vaultsync-prompt]')).toHaveCount(0, { timeout: 6_000 });
+  return title;
+}
+
+/** Logs in on a test page; answers the save prompt unless `answer` is null (e.g. locked). */
+async function login(
+  url: string,
+  username: string,
+  password: string,
+  answer: Answer | null = 'Save',
+  edits: { username?: string } = {},
+): Promise<string | null> {
   const page = await context.newPage();
   await page.goto(url);
   await page.locator('#username').fill(username);
   await page.locator('#password').fill(password);
   await Promise.all([page.waitForURL(/welcome/), page.locator('#submit').click()]);
-  await page.waitForTimeout(500);
+  const title = answer ? await answerPrompt(page, answer, edits) : null;
+  await page.waitForTimeout(300);
   await page.close();
+  return title;
 }
 
 test('first run: create the master password', async () => {
@@ -82,9 +105,14 @@ test('first run: create the master password', async () => {
   await popup.close();
 });
 
-test('captures a classic form login', async () => {
-  await login(`${L}/login.html`, 'alice', 'alice-pw-1');
+test('asks "Save password?" after a form login and saves on Save', async () => {
+  expect(await login(`${L}/login.html`, 'alice', 'alice-pw-1')).toBe('Save password?');
   expect(await savedLogins()).toContain('localhost alice');
+});
+
+test('save prompt: "No thanks" does not save', async () => {
+  await login(`${L}/login.html`, 'zed', 'zed-pw', 'No thanks');
+  expect((await savedLogins()).join()).not.toContain('zed');
 });
 
 test('auto-fills on return visits', async () => {
@@ -96,7 +124,7 @@ test('auto-fills on return visits', async () => {
 });
 
 test('updates instead of duplicating when the password changes', async () => {
-  await login(`${L}/login.html`, 'alice', 'alice-pw-2');
+  expect(await login(`${L}/login.html`, 'alice', 'alice-pw-2')).toBe('Update password?');
   const logins = await savedLogins();
   expect(logins.filter((t) => t.includes('alice'))).toHaveLength(1);
   const page = await context.newPage();
@@ -130,6 +158,9 @@ test('multi-step login: email on page 1, password on page 2', async () => {
   await Promise.all([page.waitForURL(/step2/), page.locator('#next').click()]);
   await page.locator('#password').fill('bob-pw-1');
   await Promise.all([page.waitForURL(/welcome/), page.locator('#submit').click()]);
+  const prompt = page.frameLocator('iframe[data-vaultsync-prompt]');
+  await expect(prompt.locator('#username')).toHaveValue('bob@example.com'); // from page 1
+  await answerPrompt(page, 'Save');
   await page.close();
   expect(await savedLogins()).toContain('127.0.0.1 bob@example.com');
 });
@@ -145,7 +176,8 @@ test('iframes: each frame only gets credentials for its own site', async () => {
   await frame.locator('#username').fill('carol');
   await frame.locator('#password').fill('carol-pw');
   await frame.locator('#submit').click();
-  await page.waitForTimeout(800);
+  // The prompt appears in the TOP page, not inside the iframe.
+  await answerPrompt(page, 'Save');
   await page.close();
   expect(await savedLogins()).toContain('127.0.0.1 carol');
 });
@@ -205,7 +237,7 @@ test('lock stops auto-fill; wrong master password shows an error', async () => {
 });
 
 test('logins captured while locked are saved after unlocking', async () => {
-  await login(`${L}/login.html`, 'dave', 'dave-pw');
+  await login(`${L}/login.html`, 'dave', 'dave-pw', null); // locked: queued, no prompt
   const popup = await openPopup();
   await expect(popup.locator('#locked-pending')).toContainText('1 captured login');
   await popup.locator('#unlock-password').fill(MASTER);
@@ -234,6 +266,13 @@ test('popup: reveal, copy-ready detail, password history, manual add', async () 
   await popup.locator('#search').fill('example.org');
   await expect(popup.locator('.cred-item')).toHaveCount(1);
   await popup.close();
+});
+
+test('save prompt: the username can be corrected before saving', async () => {
+  await login(`${L}/login.html`, 'typo-usr', 'fixed-pw', 'Save', { username: 'fixed-user' });
+  const logins = (await savedLogins()).join();
+  expect(logins).toContain('localhost fixed-user');
+  expect(logins).not.toContain('typo-usr');
 });
 
 test('options: encrypted export and import round-trip', async () => {
@@ -273,6 +312,51 @@ test('settings: turning auto-fill off stops filling', async () => {
   await page.close();
   await options.locator('.switch:has(#autofill) span').click();
   await options.close();
+});
+
+test('save prompt: "Never" stops prompts for that site; Options can undo it', async () => {
+  await login(`${IP}/login.html`, 'nina', 'nina-pw', 'Never');
+  // Next login on the same site: no prompt at all.
+  const page = await context.newPage();
+  await page.goto(`${IP}/login.html`);
+  await page.locator('#username').fill('nina');
+  await page.locator('#password').fill('nina-pw-2');
+  await Promise.all([page.waitForURL(/welcome/), page.locator('#submit').click()]);
+  await page.waitForTimeout(2_000);
+  await expect(page.locator('iframe[data-vaultsync-prompt]')).toHaveCount(0);
+  await page.close();
+  expect((await savedLogins()).join()).not.toContain('nina');
+
+  const options = await context.newPage();
+  await options.goto(`chrome-extension://${extensionId}/src/options/options.html`);
+  const row = options.locator('#never-list li', { hasText: '127.0.0.1' });
+  await expect(row).toBeVisible();
+  await row.getByRole('button', { name: 'Remove' }).click();
+  await expect(options.locator('#never-empty')).toBeVisible();
+  await options.close();
+  expect(await login(`${IP}/login.html`, 'nina', 'nina-pw-3')).toBe('Save password?');
+});
+
+test('the web page cannot read the save prompt', async () => {
+  const page = await context.newPage();
+  await page.goto(`${L}/login.html`);
+  await page.locator('#username').fill('pat');
+  await page.locator('#password').fill('pat-secret-pw');
+  await Promise.all([page.waitForURL(/welcome/), page.locator('#submit').click()]);
+  await expect(page.frameLocator('iframe[data-vaultsync-prompt]').locator('#card')).toBeVisible();
+  // Code running in the page itself tries to look inside the prompt.
+  const leaked = await page.evaluate(() => {
+    const frame = document.querySelector('iframe[data-vaultsync-prompt]') as HTMLIFrameElement;
+    try {
+      return frame.contentDocument?.body?.innerHTML ?? 'blocked';
+    } catch {
+      return 'blocked';
+    }
+  });
+  expect(leaked).toBe('blocked');
+  expect(await page.content()).not.toContain('pat-secret-pw');
+  await answerPrompt(page, 'No thanks');
+  await page.close();
 });
 
 test('auto-lock after the inactivity timeout', async () => {

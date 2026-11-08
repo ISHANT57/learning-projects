@@ -17,6 +17,7 @@ import {
   pickPasswordField,
   safeSend,
 } from './dom';
+import { initSavePrompt } from './savePrompt';
 
 const DEDUPE_MS = 4_000;
 let lastSent = { key: '', at: 0 };
@@ -98,6 +99,8 @@ function init(): void {
     }, 300);
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  initSavePrompt();
 }
 
 if (typeof chrome !== 'undefined' && chrome.runtime?.id) init();

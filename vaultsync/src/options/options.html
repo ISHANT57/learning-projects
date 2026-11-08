@@ -63,6 +63,13 @@
         </div>
         <div class="setting">
           <div>
+            <label for="asktosave">Ask before saving passwords</label>
+            <div class="muted small">Shows a "Save password?" prompt after you log in. Turn off to save logins silently.</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="asktosave" /><span></span></label>
+        </div>
+        <div class="setting">
+          <div>
             <label for="autofill">Auto-fill logins</label>
             <div class="muted small">Fills saved usernames and passwords on matching sites while unlocked.</div>
           </div>
@@ -79,6 +86,15 @@
           </div>
           <label class="switch"><input type="checkbox" id="activitylog" /><span></span></label>
         </div>
+      </section>
+
+      <!-- Never-save list -->
+      <section class="card">
+        <h2>Never saved</h2>
+        <p class="muted">Sites where you chose <strong>Never</strong> in the save prompt. VaultSync won't offer to save passwords there.</p>
+        <p class="muted small" id="never-locked" hidden>Unlock the vault from the toolbar popup to see this list.</p>
+        <ul class="never-list" id="never-list"></ul>
+        <p class="muted small" id="never-empty" hidden>No sites yet.</p>
       </section>
 
       <!-- Backup -->

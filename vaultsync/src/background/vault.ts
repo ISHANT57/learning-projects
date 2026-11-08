@@ -121,6 +121,7 @@ function normalizeVault(data: Vault): Vault {
     c.history ??= [];
     c.scheme ??= 'https';
   }
+  data.neverSave = Array.isArray(data.neverSave) ? data.neverSave : [];
   return data;
 }
 
@@ -192,6 +193,43 @@ export async function credentialsForSite(
     // host, where it could be read by anyone on the network path.
     .filter((c) => !(c.scheme === 'https' && pageScheme === 'http'))
     .map((c) => ({ username: c.username, password: c.password }));
+}
+
+/** What saving this login would do - used to decide whether to show the save prompt. */
+export async function previewUpsert(host: string, username: string, password: string): Promise<UpsertResult> {
+  const { vault } = await load();
+  const existing = vault.credentials.find(
+    (c) => c.host === host && c.username.toLowerCase() === username.trim().toLowerCase(),
+  );
+  if (!existing) return 'new';
+  return existing.password === password ? 'unchanged' : 'updated';
+}
+
+/** True if the user chose "Never" for this site. */
+export async function isNeverSave(host: string): Promise<boolean> {
+  const { vault } = await load();
+  return (vault.neverSave ?? []).includes(host);
+}
+
+export async function listNeverSave(): Promise<string[]> {
+  const { vault } = await load();
+  await touchActivity();
+  return [...(vault.neverSave ?? [])].sort();
+}
+
+export async function addNeverSave(host: string): Promise<void> {
+  const loaded = await load();
+  const list = new Set(loaded.vault.neverSave ?? []);
+  list.add(host);
+  loaded.vault.neverSave = [...list];
+  await persist(loaded, []);
+}
+
+export async function removeNeverSave(host: string): Promise<string[]> {
+  const loaded = await load();
+  loaded.vault.neverSave = (loaded.vault.neverSave ?? []).filter((h) => h !== host);
+  await persist(loaded, []);
+  return [...loaded.vault.neverSave].sort();
 }
 
 // ----------------------------------------------------------------------------- writes

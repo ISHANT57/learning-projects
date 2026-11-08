@@ -10,6 +10,7 @@ function sanitize(raw: Partial<Settings> | undefined): Settings {
   }
   if (typeof raw?.autoFill === 'boolean') s.autoFill = raw.autoFill;
   if (typeof raw?.activityLog === 'boolean') s.activityLog = raw.activityLog;
+  if (typeof raw?.askToSave === 'boolean') s.askToSave = raw.askToSave;
   return s;
 }
 

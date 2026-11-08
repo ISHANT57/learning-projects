@@ -127,6 +127,29 @@ describe('credentials', () => {
   });
 });
 
+describe('save prompt helpers', () => {
+  beforeEach(async () => {
+    await vault.createVault(MASTER);
+  });
+
+  it('previews what saving would do without changing the vault', async () => {
+    expect(await vault.previewUpsert('a.com', 'u', 'pw')).toBe('new');
+    expect(await vault.listSummaries()).toHaveLength(0);
+    await vault.upsert('a.com', 'https', 'u', 'pw');
+    expect(await vault.previewUpsert('a.com', 'U', 'pw')).toBe('unchanged');
+    expect(await vault.previewUpsert('a.com', 'u', 'pw2')).toBe('updated');
+  });
+
+  it('keeps the "Never" list inside the encrypted vault', async () => {
+    await vault.addNeverSave('private-site.com');
+    expect(await vault.isNeverSave('private-site.com')).toBe(true);
+    expect(await vault.listNeverSave()).toEqual(['private-site.com']);
+    expect(JSON.stringify(chromeMock.storage.local.dump()) + decodedStorage()).not.toContain('private-site.com');
+    expect(await vault.removeNeverSave('private-site.com')).toEqual([]);
+    expect(await vault.isNeverSave('private-site.com')).toBe(false);
+  });
+});
+
 describe('locked captures', () => {
   it('queues captures while locked and saves them on unlock', async () => {
     await vault.createVault(MASTER);

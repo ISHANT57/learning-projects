@@ -23,7 +23,7 @@ import {
   type Envelope,
   type PageMessage,
 } from '../shared/messages';
-import type { AppState } from '../shared/types';
+import type { AppState, SaveOffer, SaveOfferView } from '../shared/types';
 import { parseHostInput, siteFromUrl } from '../shared/url';
 import * as drive from './drive';
 import { getLastActivity, restrictSessionAccess } from './session';
@@ -127,6 +127,46 @@ async function forgetUsername(host: string): Promise<void> {
   }
 }
 
+// ----------------------------------------------------------------------------- save prompt offers
+//
+// "Save password?" works like Chrome's: a captured login becomes an OFFER for that tab,
+// kept in RAM-only session storage for a few minutes. The prompt (an extension-origin
+// iframe the page cannot read) fetches the details from here and reports the decision.
+
+type OfferMap = Record<string, SaveOffer>;
+
+async function offers(): Promise<OfferMap> {
+  const result = await chrome.storage.session.get(SESSION.SAVE_OFFERS);
+  const map = (result[SESSION.SAVE_OFFERS] as OfferMap | undefined) ?? {};
+  const cutoff = Date.now() - LIMITS.SAVE_OFFER_TTL_MS;
+  for (const [tab, offer] of Object.entries(map)) if (offer.createdAt < cutoff) delete map[tab];
+  return map;
+}
+
+async function getOffer(tabId: number | undefined): Promise<SaveOffer | null> {
+  if (tabId === undefined) return null;
+  return (await offers())[String(tabId)] ?? null;
+}
+
+async function setOffer(offer: SaveOffer): Promise<void> {
+  const map = await offers();
+  map[String(offer.tabId)] = offer;
+  await chrome.storage.session.set({ [SESSION.SAVE_OFFERS]: map });
+}
+
+async function clearOffer(tabId: number | undefined): Promise<void> {
+  if (tabId === undefined) return;
+  const map = await offers();
+  delete map[String(tabId)];
+  await chrome.storage.session.set({ [SESSION.SAVE_OFFERS]: map });
+}
+
+chrome.tabs.onRemoved.addListener((tabId) => void clearOffer(tabId));
+
+function isPromptPage(sender: chrome.runtime.MessageSender): boolean {
+  return typeof sender.url === 'string' && sender.url.startsWith(chrome.runtime.getURL('src/prompt/prompt.html'));
+}
+
 // ----------------------------------------------------------------------------- messages
 
 function isExtensionPage(sender: chrome.runtime.MessageSender): boolean {
@@ -158,7 +198,7 @@ async function route(message: unknown, sender: chrome.runtime.MessageSender): Pr
     throw new Error('Malformed message.');
   }
   const type = (message as { type: string }).type;
-  if (isExtensionPage(sender)) return handlePage(message as PageMessage);
+  if (isExtensionPage(sender)) return handlePage(message as PageMessage, sender);
   if (sender.tab && CONTENT_MESSAGE_TYPES.has(type)) return handleContent(message as ContentMessage, sender);
   throw new Error('This request is not allowed from here.');
 }
@@ -175,6 +215,13 @@ async function handleContent(msg: ContentMessage, sender: chrome.runtime.Message
       return { credentials: await vault.credentialsForSite(site.host, site.scheme) };
     }
 
+    case 'hasSaveOffer': {
+      // Only the top frame shows the prompt, and it only learns "show it" - never the
+      // username or password, which the prompt iframe fetches directly.
+      if (sender.frameId !== 0) return { show: false };
+      return { show: (await getOffer(sender.tab?.id)) !== null };
+    }
+
     case 'rememberUsername': {
       const username = text(msg.username, 256);
       if (site && username) await rememberUsername(site.host, username);
@@ -189,8 +236,29 @@ async function handleContent(msg: ContentMessage, sender: chrome.runtime.Message
       const username = text(msg.username, 256) || (await recallUsername(site.host)) || '';
 
       if (await vault.isUnlocked()) {
-        const { result } = await vault.upsert(site.host, site.scheme, username, password);
         await forgetUsername(site.host);
+        if (await vault.isNeverSave(site.host)) return { saved: 'ignored' }; // user chose "Never"
+        const preview = await vault.previewUpsert(site.host, username, password);
+        if (preview === 'unchanged') return { saved: 'unchanged' };
+
+        const tabId = sender.tab?.id;
+        if ((await getSettings()).askToSave && tabId !== undefined) {
+          // Ask first, like Chrome. The top frame shows the prompt now (SPA / iframe
+          // logins) or on the next page after a normal form navigation.
+          await setOffer({
+            tabId,
+            host: site.host,
+            scheme: site.scheme,
+            username,
+            password,
+            kind: preview === 'new' ? 'new' : 'update',
+            createdAt: Date.now(),
+          });
+          chrome.tabs.sendMessage(tabId, { type: 'showSavePrompt' }, { frameId: 0 }).catch(() => undefined);
+          return { saved: 'offered' };
+        }
+
+        const { result } = await vault.upsert(site.host, site.scheme, username, password);
         if (result === 'new') notify('Login saved', `${username || 'Login'} on ${site.host} was saved to VaultSync.`);
         if (result === 'updated') notify('Password updated', `The password for ${username || 'your login'} on ${site.host} was updated.`);
         return { saved: result };
@@ -228,7 +296,7 @@ function siteOrThrow(input: string) {
   return site;
 }
 
-async function handlePage(msg: PageMessage): Promise<unknown> {
+async function handlePage(msg: PageMessage, sender: chrome.runtime.MessageSender): Promise<unknown> {
   switch (msg.type) {
     case 'getState':
       return getState();
@@ -299,6 +367,42 @@ async function handlePage(msg: PageMessage): Promise<unknown> {
       await vault.replaceStoredBlobAndLock(blob);
       return null;
     }
+
+    case 'getSaveOffer': {
+      if (!isPromptPage(sender)) throw new Error('This request is not allowed from here.');
+      const offer = await getOffer(sender.tab?.id);
+      if (!offer) return null;
+      const view: SaveOfferView = { host: offer.host, username: offer.username, password: offer.password, kind: offer.kind };
+      return view;
+    }
+
+    case 'resolveSaveOffer': {
+      if (!isPromptPage(sender)) throw new Error('This request is not allowed from here.');
+      const tabId = sender.tab?.id;
+      const offer = await getOffer(tabId);
+      if (!offer) throw new vault.ValidationError('This save request has expired.');
+      if (msg.action === 'dismiss') {
+        await clearOffer(tabId);
+        return { result: 'dismissed' };
+      }
+      if (msg.action === 'never') {
+        await vault.addNeverSave(offer.host);
+        await clearOffer(tabId);
+        return { result: 'never' };
+      }
+      // Save, with whatever the user edited in the prompt.
+      const username = typeof msg.username === 'string' ? text(msg.username, 256) : offer.username;
+      const password = typeof msg.password === 'string' && msg.password ? msg.password : offer.password;
+      const { result } = await vault.upsert(offer.host, offer.scheme, username, password);
+      await clearOffer(tabId);
+      return { result };
+    }
+
+    case 'listNeverSave':
+      return vault.listNeverSave();
+
+    case 'removeNeverSave':
+      return vault.removeNeverSave(text(msg.host, 256));
 
     case 'clearAllData':
       await vault.lock();

@@ -8,6 +8,7 @@ A Chrome extension (Manifest V3) that saves the logins you type, auto-fills them
 
 - **Encryption:** AES-256-GCM, with the key derived by PBKDF2-SHA256 (600,000 iterations, random 16-byte salt) and a fresh 12-byte IV for every save. Everything uses the browser's Web Crypto API; there are no crypto libraries.
 - **Capture & auto-fill:** classic forms, React/Angular/Vue inputs, single-page apps, multi-step logins (email first, then password) and iframes.
+- **Asks before saving, like Chrome:** a *Save password?* / *Update password?* prompt with an editable username, a masked password with an eye toggle, and **Never / Save / No thanks** buttons.
 - **Google Drive:** `vaultsync-backup.enc` (encrypted vault) and `vaultsync-activity-log.md` (site, username, time and action, **never** passwords).
 - **Tech:** TypeScript, Vite + @crxjs/vite-plugin, vanilla HTML/CSS, Drive REST API v3 via `fetch`.
 
@@ -69,8 +70,9 @@ Without a client ID, the extension still builds and works fully offline. The pop
 | Feature | How to check it |
 |---|---|
 | Create master password | First click on the icon shows *Create your master password* (minimum 12 characters, plus a strength meter). |
-| Capture | Log in to any site, e.g. a test account. A notification says *Login saved*, and the site appears in the popup. |
-| De-duplication | Log in again with a new password for the same username. You'll see *Password updated* rather than a second entry, and the old password moves to *Previous passwords*. |
+| Save prompt | Log in to any site. A **Save password?** box appears at the top right. You can fix the username, click the eye to check the password, then click **Save**. The site appears in the popup. |
+| No thanks / Never | **No thanks** saves nothing. **Never** stops VaultSync asking on that site; undo it in Settings → *Never saved* → **Remove**. |
+| De-duplication | Log in again with a new password for the same username. The prompt says **Update password?**, no second entry is created, and the old password moves to *Previous passwords*. |
 | Auto-fill | Revisit the login page. After about 1 second the username and password are filled. |
 | SPA / multi-step | Try a site that asks for your email first and the password on the next page (e.g. Google, Microsoft). |
 | Locked capture | Click **Lock**, then log in somewhere. The icon badge shows **1**; unlock and it's saved. |
@@ -91,9 +93,16 @@ Without a client ID, the extension still builds and works fully offline. The pop
 | Content scripts never see the key or vault | Content scripts can only send `capture`, `rememberUsername` and `getFillData`. The **site is taken from `sender.url`** (set by Chrome) and never from the page, and auto-fill only returns logins for that exact frame's own host. Everything else is accepted only from the extension's own pages. |
 | Service-worker termination | All state lives in `chrome.storage`. While unlocked, the key is kept in `chrome.storage.session`: RAM only, wiped when the browser closes, unreadable by content scripts. A restart therefore resumes the unlocked state, and after a browser restart the vault is locked. |
 | Honeypot protection | Only visible fields are filled. Sign-up and change-password forms are skipped, fields you typed in are never overwritten, and `https` logins are never filled on `http` pages. |
-| Not detectable by websites | Content scripts are built as standalone bundles, so the manifest has **no `web_accessible_resources`** that a website could probe. |
+| Save prompt isolation | The prompt is an iframe served from `chrome-extension://…`. The web page can't read inside it (cross-origin), and the page's content script never receives the password; the prompt fetches it from the background, which only answers its own tab. |
+| Minimal exposure to websites | Content scripts are standalone bundles. The only `web_accessible_resources` entry is the save-prompt page, which is needed to show it as an isolated iframe. |
 
-**Extras beyond the original spec:** password history (last 5), saving logins captured while locked, Restore from Drive, a password generator, and a minimum master-password length with a strength meter.
+**Extras beyond the original spec:**
+- **A Chrome-style save prompt** with a "Never" list (kept inside the encrypted vault) and an *Ask before saving* setting.
+- **Password history** (last 5).
+- **Saving logins captured while locked.**
+- **Restore from Drive.**
+- **A password generator.**
+- **A minimum master-password length** with a strength meter.
 
 **Deliberate deviations from the spec:**
 - **The `email` OAuth scope isn't requested.** It isn't needed (see Least-privilege OAuth above).
@@ -115,8 +124,9 @@ Without a client ID, the extension still builds and works fully offline. The pop
 manifest.json            MV3 manifest (OAuth client ID injected from .env at build time)
 vite.config.ts           Vite + crxjs build config
 src/background/          service worker: index (router, alarms), crypto, session, vault, drive, settings
-src/content/             formDetector (capture), autoFill, spaHooks (page-world history hook), dom helpers
+src/content/             formDetector (capture), savePrompt (shows the prompt iframe), autoFill, spaHooks, dom helpers
 src/popup/  src/options/ vanilla HTML/CSS/TS user interface
+src/prompt/              the "Save password?" prompt (isolated extension iframe)
 src/shared/              types, constants, messages, url + ui helpers
 public/                  icons, _locales
 tests/unit/              Vitest: crypto, vault, drive (fake Drive API), content, url

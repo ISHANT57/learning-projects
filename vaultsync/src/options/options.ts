@@ -42,6 +42,7 @@ function renderSettings(settings: Settings): void {
   byId<HTMLSelectElement>('autolock').value = String(settings.autoLockMinutes);
   byId<HTMLInputElement>('autofill').checked = settings.autoFill;
   byId<HTMLInputElement>('activitylog').checked = settings.activityLog;
+  byId<HTMLInputElement>('asktosave').checked = settings.askToSave;
 }
 
 async function refresh(): Promise<void> {
@@ -53,6 +54,38 @@ async function refresh(): Promise<void> {
       : 'Vault locked - unlock it from the toolbar popup to export.';
   renderSync(state.sync);
   renderSettings(state.settings);
+  await renderNeverList();
+}
+
+async function renderNeverList(sites?: string[]): Promise<void> {
+  const list = byId('never-list');
+  list.replaceChildren();
+  const unlocked = state?.unlocked === true;
+  byId('never-locked').hidden = unlocked;
+  if (!unlocked) {
+    byId('never-empty').hidden = true;
+    return;
+  }
+  const hosts = sites ?? (await send({ type: 'listNeverSave' }));
+  byId('never-empty').hidden = hosts.length > 0;
+  for (const host of hosts) {
+    const li = document.createElement('li');
+    const name = document.createElement('span');
+    name.textContent = host;
+    const remove = document.createElement('button');
+    remove.className = 'btn';
+    remove.textContent = 'Remove';
+    remove.addEventListener('click', async () => {
+      try {
+        await renderNeverList(await send({ type: 'removeNeverSave', host }));
+        toast(`VaultSync will offer to save passwords on ${host} again`);
+      } catch (err) {
+        toast(friendlyError(err), true);
+      }
+    });
+    li.append(name, remove);
+    list.append(li);
+  }
 }
 
 // ----------------------------------------------------------------------------- actions
@@ -129,6 +162,9 @@ function bindSettings(): void {
   );
   byId<HTMLInputElement>('autofill').addEventListener('change', (e) =>
     void save({ autoFill: (e.target as HTMLInputElement).checked }),
+  );
+  byId<HTMLInputElement>('asktosave').addEventListener('change', (e) =>
+    void save({ askToSave: (e.target as HTMLInputElement).checked }),
   );
   byId<HTMLInputElement>('activitylog').addEventListener('change', (e) =>
     void save({ activityLog: (e.target as HTMLInputElement).checked }),

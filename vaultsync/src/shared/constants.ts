@@ -19,6 +19,7 @@ export const SESSION = {
   LAST_ACTIVITY: 'lastActivity',
   PENDING_CAPTURES: 'pendingCaptures',
   MULTI_STEP: 'multiStepUsernames',
+  SAVE_OFFERS: 'saveOffers', // per-tab "Save password?" offers
 } as const;
 
 export const ALARMS = {
@@ -54,6 +55,7 @@ export const LIMITS = {
   MULTI_STEP_TTL_MS: 5 * 60_000,
   FILL_DELAY_MS: 1_000,
   MAX_FIELD_LENGTH: 1_024,
+  SAVE_OFFER_TTL_MS: 3 * 60_000,
 } as const;
 
 export const AUTOLOCK_CHOICES = [5, 15, 30, 60] as const;
@@ -62,6 +64,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoLockMinutes: 15,
   autoFill: true,
   activityLog: true,
+  askToSave: true,
 };
 
 export const OWNER = {

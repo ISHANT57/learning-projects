@@ -2,6 +2,7 @@
 // Fingerprint: IMPS-VS-5FA22D0791658C41 - see LICENSE.
 import type {
   AppState,
+  SaveOfferView,
   CredentialSecret,
   CredentialSummary,
   Settings,
@@ -17,7 +18,8 @@ import type {
 export type ContentMessage =
   | { type: 'capture'; username: string; password: string }
   | { type: 'rememberUsername'; username: string }
-  | { type: 'getFillData' };
+  | { type: 'getFillData' }
+  | { type: 'hasSaveOffer' };
 
 /** Messages only extension pages (popup, options) may send. */
 export type PageMessage =
@@ -37,7 +39,11 @@ export type PageMessage =
   | { type: 'exportVault' }
   | { type: 'importVault'; fileText: string; password: string }
   | { type: 'restoreFromDrive' }
-  | { type: 'clearAllData' };
+  | { type: 'clearAllData' }
+  | { type: 'getSaveOffer' }
+  | { type: 'resolveSaveOffer'; action: 'save' | 'never' | 'dismiss'; username?: string; password?: string }
+  | { type: 'listNeverSave' }
+  | { type: 'removeNeverSave'; host: string };
 
 export type Message = ContentMessage | PageMessage;
 
@@ -45,11 +51,13 @@ export const CONTENT_MESSAGE_TYPES: ReadonlySet<string> = new Set([
   'capture',
   'rememberUsername',
   'getFillData',
+  'hasSaveOffer',
 ]);
 
 /** Response payloads per message type. */
 export interface ResponseMap {
-  capture: { saved: 'new' | 'updated' | 'unchanged' | 'queued' | 'ignored' };
+  capture: { saved: 'new' | 'updated' | 'unchanged' | 'queued' | 'ignored' | 'offered' };
+  hasSaveOffer: { show: boolean };
   rememberUsername: null;
   getFillData: { credentials: Array<{ username: string; password: string }> };
   getState: AppState;
@@ -69,6 +77,10 @@ export interface ResponseMap {
   importVault: { count: number };
   restoreFromDrive: null;
   clearAllData: null;
+  getSaveOffer: SaveOfferView | null;
+  resolveSaveOffer: { result: 'new' | 'updated' | 'unchanged' | 'never' | 'dismissed' };
+  listNeverSave: string[];
+  removeNeverSave: string[];
 }
 
 export type Envelope<T> = { ok: true; data: T } | { ok: false; error: string; code?: string };

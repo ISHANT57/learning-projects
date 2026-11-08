@@ -45,6 +45,12 @@
       "run_at": "document_idle"
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/prompt/prompt.html"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
   "permissions": ["storage", "alarms", "notifications", "identity", "identity.email", "activeTab"],
   "host_permissions": ["https://www.googleapis.com/*", "https://oauth2.googleapis.com/*"],
   "oauth2": {

@@ -9,7 +9,7 @@ A plain-English explanation of how this password manager works, which technologi
 ## 1. What it does (in one minute)
 
 1. You create a **master password** once.
-2. When you log in to a website, VaultSync **notices** and saves the username and password, **encrypted**.
+2. When you log in to a website, VaultSync **notices** and asks **"Save password?"**, just like Chrome. Click **Save** and it's stored, **encrypted**.
 3. Next time you visit that site, it **fills the login in for you**.
 4. Optionally, it copies the **encrypted** vault to your **Google Drive** and keeps a readable log of *which* sites you saved (never the passwords).
 
@@ -90,6 +90,7 @@ VaultSync instead keeps the key in **`chrome.storage.session`**:
 
 - **Capture:** listens for form *submit*, clicks on "Log in / Sign in / Next" buttons, and Enter in a password box. It finds the username field next to the password (autocomplete hints, email type, names like "user/email/login", or the nearest box before it).
 - **Smart password choice:** on sign-up or change-password forms, it picks the *new* password, not the old one or the confirmation.
+- **Save prompt (like Chrome):** after you log in, a *Save password?* box appears at the top right. You can correct the username, peek at the password with the eye button, and choose **Save**, **No thanks** or **Never** (never ask for this site). For an existing login whose password changed, it asks **Update password?** instead.
 - **No duplicates:** the same site and username updates the password, and the old one is kept in **history** (last 5).
 - **Auto-fill:** about 1 s after a page loads, it asks for logins *for this exact site* and fills them using the **native value setter** plus `input`/`change` events, so React, Angular and Vue notice.
 - **SPAs:** a tiny script in the page's own JavaScript world reports `history.pushState` navigations, so auto-fill runs again without a reload.
@@ -113,6 +114,7 @@ VaultSync instead keeps the key in **`chrome.storage.session`**:
 | **Least privilege** | Ask for the smallest permissions possible (`drive.file`, no `tabs`/`scripting`). |
 | **Debounce** | Group many quick events into one action (many saves lead to one Drive sync). |
 | **OAuth token** | A temporary key Google gives the extension to access Drive on your behalf. |
+| **Cross-origin iframe** | A frame from a different origin. The page around it can't read what's inside, which is why the save prompt is safe to show on any website. |
 | **Honeypot field** | A hidden input meant to trick auto-fill. VaultSync fills only visible fields. |
 | **Fingerprint** | Unique marker (`IMPS-VS-…`) in the code and docs, used to recognise copies. |
 
@@ -123,13 +125,14 @@ VaultSync instead keeps the key in **`chrome.storage.session`**:
 ```
 src/*.ts ──Vite + crxjs──► dist/  (manifest + service worker + standalone content scripts + pages)
                               │
-         npm test ─────► Vitest: crypto · vault · drive (fake Drive API) · content · url   (45 tests)
-   npm run test:e2e ───► Playwright: real Chromium + dist/ + local test sites            (16 tests)
+         npm test ─────► Vitest: crypto · vault · drive (fake Drive API) · content · url   (47 tests)
+   npm run test:e2e ───► Playwright: real Chromium + dist/ + local test sites            (20 tests)
 ```
 
 The end-to-end tests cover:
 - first-run setup
-- capture, auto-fill and update-not-duplicate
+- the save prompt: Save, No thanks, Never (and undo), a corrected username, "Update password?", and the page being unable to read it
+- auto-fill and update-not-duplicate
 - React inputs and SPA navigation
 - multi-step logins and iframe isolation
 - honeypot fields
