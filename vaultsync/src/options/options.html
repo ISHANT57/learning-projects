@@ -1,0 +1,127 @@
+<!doctype html>
+<!-- VaultSync - (c) 2026 IMPS. All rights reserved. Made by Ishant. Fingerprint: IMPS-VS-5FA22D0791658C41 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VaultSync Settings</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-head">
+        <img src="/icons/icon128.png" alt="" width="40" height="40" />
+        <div>
+          <h1>VaultSync settings</h1>
+          <p class="muted" id="vault-state">Loading…</p>
+        </div>
+      </header>
+
+      <!-- Google account -->
+      <section class="card">
+        <h2>Google Drive sync</h2>
+        <p class="muted">
+          Backs up your <strong>encrypted</strong> vault to <code>vaultsync-backup.enc</code> and keeps an
+          activity log in <code>vaultsync-activity-log.md</code> in your Google Drive. VaultSync can only see
+          files it created (<code>drive.file</code> permission).
+        </p>
+        <div id="not-configured" class="notice" hidden>
+          Google sync is not set up for this build. Create an OAuth client of type
+          <em>Chrome Extension</em> for the application ID <code id="ext-id"></code>, put its client ID in
+          <code>.env</code> as <code>GOOGLE_OAUTH_CLIENT_ID</code> and rebuild. See the README for step-by-step
+          instructions.
+        </div>
+        <div class="status-row">
+          <span class="dot" id="g-dot"></span>
+          <div>
+            <div id="g-status">Not connected</div>
+            <div class="muted small" id="g-detail"></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="btn-connect">Connect Google account</button>
+          <button class="btn" id="btn-sync" hidden>Sync now</button>
+          <button class="btn" id="btn-restore" hidden>Restore from Drive…</button>
+          <button class="btn danger" id="btn-disconnect" hidden>Disconnect</button>
+        </div>
+      </section>
+
+      <!-- Security -->
+      <section class="card">
+        <h2>Security &amp; behaviour</h2>
+        <div class="setting">
+          <div>
+            <label for="autolock">Auto-lock after inactivity</label>
+            <div class="muted small">Locks the vault when you haven't used VaultSync for this long.</div>
+          </div>
+          <select id="autolock">
+            <option value="5">5 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+        </div>
+        <div class="setting">
+          <div>
+            <label for="autofill">Auto-fill logins</label>
+            <div class="muted small">Fills saved usernames and passwords on matching sites while unlocked.</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="autofill" /><span></span></label>
+        </div>
+        <div class="setting">
+          <div>
+            <label for="activitylog">Activity log in Google Drive</label>
+            <div class="muted small">
+              Adds a row to <code>vaultsync-activity-log.md</code> for every saved or updated login.
+              <strong>Privacy note:</strong> the log is not encrypted - it lists site names and usernames (never
+              passwords).
+            </div>
+          </div>
+          <label class="switch"><input type="checkbox" id="activitylog" /><span></span></label>
+        </div>
+      </section>
+
+      <!-- Backup -->
+      <section class="card">
+        <h2>Export &amp; import</h2>
+        <p class="muted">The export file stays encrypted with your master password.</p>
+        <div class="actions">
+          <button class="btn" id="btn-export">Export encrypted vault</button>
+          <button class="btn" id="btn-import-pick">Import vault file…</button>
+          <input type="file" id="import-file" accept=".json,application/json" hidden />
+        </div>
+        <form id="import-form" class="import-form" hidden novalidate>
+          <p>
+            Importing <strong id="import-name"></strong> will <strong>replace</strong> your current vault. Enter the
+            master password that file was exported with - it becomes your master password.
+          </p>
+          <input type="password" id="import-password" placeholder="Master password of the file" autocomplete="off" />
+          <div class="actions">
+            <button type="submit" class="btn primary">Replace vault with this file</button>
+            <button type="button" class="btn" id="import-cancel">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Danger zone -->
+      <section class="card danger-zone">
+        <h2>Danger zone</h2>
+        <p class="muted">
+          Deletes the vault, settings and sync state from this browser and disconnects Google. Files in your Google
+          Drive are not deleted.
+        </p>
+        <div class="actions">
+          <input type="text" id="clear-confirm" placeholder='Type "DELETE" to confirm' autocomplete="off" />
+          <button class="btn danger" id="btn-clear" disabled>Clear all data</button>
+        </div>
+      </section>
+
+      <footer class="credit">
+        <span>Made by Ishant · © 2026 IMPS. All rights reserved.</span>
+        <span class="muted small" id="fingerprint"></span>
+      </footer>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module" src="./options.ts"></script>
+  </body>
+</html>

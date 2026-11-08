@@ -1,0 +1,27 @@
+{
+  "name": "vaultsync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "VaultSync Password Manager - Chrome extension (MV3). Made by Ishant - (c) 2026 IMPS. Fingerprint: IMPS-VS-5FA22D0791658C41",
+  "author": "Ishant (IMPS)",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "vite build && playwright test",
+    "zip": "node scripts/zip.mjs"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^3.0.0",
+    "@playwright/test": "^1.65.0",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^26.6.6",
+    "happy-dom": "^21.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}

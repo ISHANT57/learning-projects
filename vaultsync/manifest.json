@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "short_name": "VaultSync",
+  "description": "__MSG_extDescription__",
+  "version": "1.0.0",
+  "default_locale": "en",
+  "author": "Made by Ishant - (c) 2026 IMPS. All rights reserved. Fingerprint: IMPS-VS-5FA22D0791658C41",
+  "minimum_chrome_version": "120",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiYjQHWcU0zYijdMbrqhwPcyT+gLUFouzJiVgbO5xKznZ0lrnLBE867HsxtUZMAvODn/yyhZicJa2TSF11seRksOfe88RkQXLl+3xVzbNuICIEcYQ/jsfswCNYjsHcoImXuC+5TJ+cg5dDDMTa6kXvB3sAc78lSgX+Q2yfL5sxzPATqE0OxkWTsuY1qgcYbKn216kEQTg/GyKi9LmoyTm2suKI/w4ISdUR+msD2uQjn2lG4488zWxrBUYnHgzR0jYQy3T5WOOTHVjXt4cA5e3n6Tgvjl068WOy7bfnDHGyPjLGeE41RG11Vn7w+Nrdd03tozfE/zI0EVroI6rhRaItQIDAQAB",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "VaultSync",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/content/spaHooks.ts"],
+      "all_frames": true,
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/content/formDetector.ts", "src/content/autoFill.ts"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "alarms", "notifications", "identity", "identity.email", "activeTab"],
+  "host_permissions": ["https://www.googleapis.com/*", "https://oauth2.googleapis.com/*"],
+  "oauth2": {
+    "client_id": "__GOOGLE_OAUTH_CLIENT_ID__",
+    "scopes": ["https://www.googleapis.com/auth/drive.file"]
+  }
+}

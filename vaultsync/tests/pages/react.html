@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><title>React-style controlled inputs</title></head>
+<body><h1>React-style login</h1>
+<div id="root"></div>
+<div>state.username = <span id="state-user"></span></div>
+<div>state.password length = <span id="state-pw"></span></div>
+<script>
+// Mimics React's controlled-input value tracking: React overrides the instance's
+// "value" property and only fires onChange when the tracked value differs from the
+// DOM value. A plain el.value = x inside the page would be ignored by such trackers.
+const state = { username: '', password: '' };
+function controlled(input, key) {
+  const proto = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  let tracked = '';
+  Object.defineProperty(input, 'value', {
+    configurable: true,
+    get() { return proto.get.call(this); },
+    set(v) { tracked = String(v); proto.set.call(this, v); },
+  });
+  input.addEventListener('input', () => {
+    const current = proto.get.call(input);
+    if (current !== tracked) { tracked = current; state[key] = current; render(); }
+  });
+}
+function render() {
+  document.getElementById('state-user').textContent = state.username;
+  document.getElementById('state-pw').textContent = String(state.password.length);
+}
+document.getElementById('root').innerHTML =
+  '<form id="f" onsubmit="event.preventDefault()"><input id="username" name="username">' +
+  '<input id="password" type="password"><button type="submit">Sign in</button></form>';
+controlled(document.getElementById('username'), 'username');
+controlled(document.getElementById('password'), 'password');
+render();
+</script></body></html>

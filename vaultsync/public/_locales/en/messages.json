@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "VaultSync Password Manager",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Saves and auto-fills your logins, encrypted with your master password (AES-256-GCM), with optional encrypted Google Drive backup.",
+    "description": "Extension description"
+  }
+}
