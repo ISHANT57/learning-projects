@@ -1,0 +1,6 @@
+# Runtime (optional: without these the app still works, just without a tray icon)
+pystray>=0.19
+Pillow>=10.0
+
+# Build only - needed to create the .exe
+pyinstaller>=6.0

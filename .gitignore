@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build output (release binaries are published as GitHub Releases, not committed)
+build/
+dist/
+release/
+*.spec
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
