@@ -1,9 +1,9 @@
-# Publishes only the Laptop Teardown page to GitHub Pages.
-name: Deploy Laptop Teardown to Pages
+# Publishes only the two teardown pages to GitHub Pages: the laptop (at / and /laptop/) and the phone (at /phone/).
+name: Deploy teardown pages to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['laptop-teardown/laptop-teardown.html', '.github/workflows/pages.yml']
+    paths: ['laptop-teardown/laptop-teardown.html', 'nord-ce4-lite-teardown/nord-teardown.html', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,7 +20,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir _site && cp laptop-teardown/laptop-teardown.html _site/index.html
+      - run: |
+          mkdir -p _site/laptop _site/phone
+          cp laptop-teardown/laptop-teardown.html _site/index.html
+          cp laptop-teardown/laptop-teardown.html _site/laptop/index.html
+          cp nord-ce4-lite-teardown/nord-teardown.html _site/phone/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

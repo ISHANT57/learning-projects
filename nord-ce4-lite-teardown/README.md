@@ -1,7 +1,9 @@
 # Phone · Teardown
 
 An interactive 3D phone you can take apart, built on the [Teardown](../teardown/) framework. One offline HTML file:
-**[nord-teardown.html](nord-teardown.html)**. Double-click it. Nothing to install.
+**Live: https://ishant57.github.io/learning-projects/phone/**
+
+**[nord-teardown.html](nord-teardown.html)**: or double-click the file. Nothing to install.
 
 ## Which phone is this?
 
