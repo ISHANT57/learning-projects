@@ -7,7 +7,7 @@ A collection of small projects I build to learn new tools, languages and concept
 | [Inactive Timer App](inactive-timer-app/) | Windows app that sounds an alarm when you haven't touched the keyboard or mouse for a set time. Runs in the background from the system tray. [Download](https://github.com/ISHANT57/learning-projects/releases/tag/inactive-timer-app-v1.1.0) | Python, Tkinter, Windows API, PyInstaller, Inno Setup |
 | [VaultSync Password Manager](vaultsync/) | Chrome extension (MV3) that captures, encrypts (AES-256-GCM) and auto-fills logins, with optional encrypted Google Drive backup and a Markdown activity log. | TypeScript, Vite, Web Crypto, Chrome Extension APIs, Google Drive API |
 | [Teardown](teardown/) | Framework (copy of elvarofficial/teardown) for interactive 3D simulators of real machines. | Three.js, esbuild, Playwright, JavaScript |
-| [Laptop Teardown](laptop-teardown/) | Interactive 3D laptop you can take apart: 36 inspectable parts and six visualizations (power flow, CPU and RAM, SSD to RAM, CPU execution, cooling, boot). One offline HTML file, built on Teardown. | Three.js, JavaScript |
+| [Laptop Teardown](laptop-teardown/) ([live](https://ishant57.github.io/learning-projects/)) | Interactive 3D laptop you can take apart: 36 inspectable parts and six visualizations (power flow, CPU and RAM, SSD to RAM, CPU execution, cooling, boot). One offline HTML file, built on Teardown. | Three.js, JavaScript |
 
 ## Repository layout
 

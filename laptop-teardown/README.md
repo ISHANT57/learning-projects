@@ -2,7 +2,9 @@
 
 An interactive 3D simulator of a modern laptop, built on the Teardown framework. One offline HTML page (about 920 KB, three.js and fonts inlined, nothing fetched at run time):
 
-**[laptop-teardown.html](laptop-teardown.html)**: double-click it. Nothing to install.
+**Live: https://ishant57.github.io/learning-projects/**
+
+**[laptop-teardown.html](laptop-teardown.html)**: or double-click the file. Nothing to install.
 
 To rebuild it, you need the sibling [teardown](../teardown/) folder (the framework it is built on; run `npm install` there once):
 
