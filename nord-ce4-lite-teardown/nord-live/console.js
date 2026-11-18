@@ -5,9 +5,10 @@ import {CATALOG, COMPARE, GROUPS, PROV} from './data.js';
 export const C = {ink: '#16181b', mute: '#6a7078', line: '#dfe2e6', red: '#e5342b', blue: '#2f7de1'};
 export const TABS = [['what', 'WHAT'], ['how', 'HOW'], ['links', 'LINKS'], ['learn', 'LEARN'], ['specs', 'SPECS'], ['yours', 'YOUR PHONE']];
 export const ROADMAP = [
-  ['1', 'Exterior and exploded view', 'built'], ['2', 'Internal components and motherboard', 'built'], ['3', 'CPU, RAM and storage demonstrations', 'planned'],
+  ['1', 'Exterior and exploded view', 'built'], ['2', 'Internal components and motherboard', 'built'], ['3', 'CPU, RAM and storage demonstrations', 'built'],
   ['4', 'Battery and charging', 'planned'], ['5', 'Camera, display and sensors', 'planned'], ['6', 'Networking and communication', 'planned'], ['7', 'Android boot and app execution', 'planned'],
 ];
+export const BUILT = ['Snapdragon CPU execution', 'CPU-to-RAM communication', 'UFS read and write'];
 export const DEMOS = ['Power-on and Android boot', 'Snapdragon CPU execution', 'CPU-to-RAM communication', 'UFS read and write', 'Touchscreen input', 'Camera capture and processing', 'Wi-Fi and 5G', 'GPS positioning', 'Battery charging and power management', 'Heat and thermal management', 'Rendering and displaying a frame'];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -48,6 +49,17 @@ const CSS = `
 .callout{position:absolute;pointer-events:none;white-space:nowrap;font:600 11px/1.25 Inter,sans-serif;padding:3px 7px;background:#fff;border:1px solid ${C.blue};color:${C.ink};transform:translate(-50%,-100%);margin-top:-8px}
 .tip{position:absolute;pointer-events:none;padding:4px 8px;background:${C.ink};color:#fff;font:600 11px Inter,sans-serif;white-space:nowrap;transform:translate(12px,12px)}
 .hint{position:absolute;left:322px;width:930px;top:800px;text-align:center;font:600 10px Inter,sans-serif;letter-spacing:1.2px;color:#9aa0a8;text-transform:uppercase;pointer-events:none}
+.dock{left:322px;top:546px;width:930px;height:272px;padding:8px 16px;overflow:hidden}
+.dock h3{margin:0;font-size:14px;font-weight:700;display:inline}.dock .lsub{font-size:11.5px;color:${C.mute};margin-left:10px}
+.lrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.btn.sm{height:22px;padding:0 7px;font-size:9.5px}.btn.red{background:${C.red};color:#fff;border-color:${C.red}}
+.seg{display:flex;gap:2px;margin:7px 0 5px}.seg div{flex:none;height:30px;display:flex;flex-direction:column;justify-content:center;padding:0 6px;font-size:9.5px;font-weight:700;letter-spacing:.5px;background:#eceef1;color:${C.mute};overflow:hidden;white-space:nowrap;cursor:pointer;border-top:3px solid transparent}
+.seg div.on{background:${C.ink};color:#fff;border-top-color:${C.red}}.seg div.done{background:#d9dde2;color:${C.ink}}.seg div small{font-weight:500;font-size:8.5px;opacity:.75}
+.note{font-size:11.5px;line-height:1.5;color:#2c3036}.b{font-weight:700}.mono{font-family:'JetBrains Mono',monospace}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:11.5px}.kv span:nth-child(odd){color:${C.mute}}
+.pipe{display:flex;gap:3px;margin:0 0 4px}.pipe div{flex:1;min-width:0;height:36px;border:1px solid ${C.line};background:#fff;padding:3px 5px;font-size:10px;line-height:1.25;overflow:hidden}
+.pipe div b{display:block;font-size:8.6px;letter-spacing:1px;color:${C.mute}}.pipe div.st{background:#fff4d6;border-color:#e9c36a}.pipe div.sq{background:#eceef1;color:#9aa0a8;text-decoration:line-through}.pipe div.mi{background:#fde3e1;border-color:#e99a95}
+.lprog div{padding:0 6px;font-size:10px;line-height:14px;white-space:nowrap;display:flex;gap:8px;border-left:3px solid transparent}.lprog div.on{background:#f3e4e2;border-left-color:${C.red};font-weight:700}.lprog span.tg{margin-left:auto;font-size:9px;color:${C.red};font-weight:700}
+.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}.regs div{border:1px solid ${C.line};background:#fff;padding:2px 4px;font-size:10px}.regs div.ch{background:#fde3e1;border-color:#e99a95}.regs div b{color:${C.mute};font-size:8.5px;display:block}
 .cmp td:nth-child(2),.cmp td:nth-child(3){width:38%}
 `;
 
@@ -61,7 +73,7 @@ export function createConsole(app) {
   app.appendChild(ui);
   const add = (h) => { const n = el(h); ui.appendChild(n); return n; };
   add(`<div class="ttl"><div class="tbar"></div><h1>Phone <span>·</span> Teardown</h1><p>Reference: Nord (2020) · yours: Nord CE4 Lite 5G</p></div>`);
-  add(`<div class="top"><div class="btn on" data-act="info" data-v="home">Explore</div><div class="btn" data-act="info" data-v="compare">Reference vs your phone</div><div class="btn" data-act="info" data-v="roadmap">Roadmap and demos</div></div>`);
+  add(`<div class="top"><div class="btn on" data-act="mode" data-v="explore">Explore</div><div class="btn" data-act="mode" data-v="cpu">CPU runs</div><div class="btn" data-act="mode" data-v="ram">CPU ↔ RAM</div><div class="btn" data-act="mode" data-v="ufs">UFS storage</div><div class="btn" data-act="info" data-v="compare">Vs your phone</div><div class="btn" data-act="info" data-v="roadmap">Roadmap</div></div>`);
   add(`<div class="legend">${['DOC', 'TD', 'APX', '3RD', 'STD', 'CALC', 'ILL', 'UNK'].map((t) => tag(t)).join('')} &nbsp; hover a tag · <b style="color:#7a5af0">violet parts</b> are illustrative placements</div>`);
   const list = add('<div class="pn list"></div>');
   list.innerHTML = GROUPS.map(([g, ids]) => `<div class="g lcap">${g}</div>${ids.map((id) => `<div class="it" data-act="pick" data-v="${id}" data-id="${id}"><i></i>${esc(CATALOG[id].name)}</div>`).join('')}`).join('');
@@ -77,8 +89,10 @@ export function createConsole(app) {
   const lines = add('<svg style="position:absolute;inset:0;overflow:visible;pointer-events:none" width="1600" height="900"></svg>');
   const calls = add('<div style="position:absolute;inset:0;pointer-events:none"></div>');
   const tip = add('<div class="tip" style="display:none"></div>');
+  const dock = add('<div class="pn dock" style="display:none"></div>');
   const keys = {};
-  for (const n of ui.querySelectorAll('[data-k]')) keys[n.dataset.k] = n;
+  const index = () => { for (const k of Object.keys(keys)) delete keys[k]; for (const n of ui.querySelectorAll('[data-k]')) keys[n.dataset.k] = n; };
+  index();
   const cache = {};
   const set = (k, v) => { if (cache[k] !== v && keys[k]) { cache[k] = v; keys[k].textContent = v; } };
   const cls = (k, c, on) => keys[k] && keys[k].classList.toggle(c, !!on);
@@ -91,12 +105,16 @@ export function createConsole(app) {
 
   const api = {
     root: ui, tip, set, cls, keys,
+    /** Replace the demonstration dock ('' hides it). */
+    setDock(html) { dock.style.display = html ? '' : 'none'; dock.innerHTML = html; for (const k of Object.keys(cache)) if (!/^(exv|back|disp|qual|callh|calls)/.test(k)) delete cache[k]; index(); },
+    html(k, h) { if (keys[k] && cache['h' + k] !== h) { cache['h' + k] = h; keys[k].innerHTML = h; } },
+    topOn(v) { for (const b of ui.querySelectorAll('.top .btn')) b.classList.toggle('on', b.dataset.v === v); },
+    infoHtml(cap, title, html) { insp.innerHTML = `<div class="head"><div class="lcap">${esc(cap)}</div><h2>${esc(title)}</h2></div><div class="body">${html}<p style="color:${C.mute};font-size:11px">Click a part to inspect it.</p></div>`; },
     info(kind) {
-      for (const b of ui.querySelectorAll('.top .btn')) b.classList.toggle('on', b.dataset.v === kind);
       if (kind === 'compare') {
         insp.innerHTML = `<div class="head"><div class="lcap">Why two phones</div><h2>Reference vs your phone</h2><div class="sum">The model uses the Nord (2020) teardown. Your phone's documented specs are on the right.</div></div><div class="body"><table class="cmp">${COMPARE.map(([k, a, ta, b, tb]) => `<tr><td>${esc(k)}</td><td>${esc(a)}${tag(ta)}</td><td>${esc(b)}${tag(tb)}</td></tr>`).join('')}</table></div>`;
       } else if (kind === 'roadmap') {
-        insp.innerHTML = `<div class="head"><div class="lcap">Plan</div><h2>Roadmap and demos</h2></div><div class="body"><h4>Phases</h4>${ROADMAP.map(([n, t, s]) => `<p><b>${n}.</b> ${esc(t)} ${s === 'built' ? '<span class="pv" style="background:#1f7a4d">BUILT</span>' : '<span class="pv" style="background:#8a8f97">PLANNED</span>'}</p>`).join('')}<h4>The eleven demonstrations (planned)</h4>${DEMOS.map((d, i) => `<p style="margin:0 0 4px">${i + 1}. ${esc(d)}</p>`).join('')}<p style="margin-top:10px;color:${C.mute}">All demos will be conceptual models built on documented numbers and tagged illustrative. None measures your phone.</p><p style="color:${C.mute}">These demonstrations are for the <b>phone</b>. The laptop (separate project, <b>laptop-teardown</b>) already has its six: power flow, CPU and RAM, SSD to RAM, CPU execution, cooling and boot.</p></div>`;
+        insp.innerHTML = `<div class="head"><div class="lcap">Plan</div><h2>Roadmap and demos</h2></div><div class="body"><h4>Phases</h4>${ROADMAP.map(([n, t, s]) => `<p><b>${n}.</b> ${esc(t)} ${s === 'built' ? '<span class="pv" style="background:#1f7a4d">BUILT</span>' : '<span class="pv" style="background:#8a8f97">PLANNED</span>'}</p>`).join('')}<h4>The eleven demonstrations</h4>${DEMOS.map((d, i) => `<p style="margin:0 0 4px">${i + 1}. ${esc(d)} ${BUILT.includes(d) ? '<span class="pv" style="background:#1f7a4d">BUILT</span>' : '<span class="pv" style="background:#8a8f97">PLANNED</span>'}</p>`).join('')}<p style="margin-top:10px;color:${C.mute}">Every demo is a conceptual model built on documented or standard numbers and tagged illustrative. None measures your phone.</p><p style="color:${C.mute}">These demonstrations are for the <b>phone</b>. The laptop (separate project, <b>laptop-teardown</b>) already has its six: power flow, CPU and RAM, SSD to RAM, CPU execution, cooling and boot.</p></div>`;
       } else insp.innerHTML = welcome;
     },
     inspect(id, tab, extra = {}) {

@@ -6,6 +6,7 @@ import {createConsole, C} from './console.js';
 import {CATALOG} from './data.js';
 import {createFx} from './fx.js';
 import {createStage} from './stage.js';
+import {createDemos, DOCKS, INTRO, MODE_NAMES} from './demos.js';
 
 const W = 1600;
 const H = 900;
@@ -17,7 +18,8 @@ const CSS = `html,body{background:#e9ebee;overflow:hidden}
 #gl{position:absolute;left:0;top:0;width:${W}px;height:${H}px;touch-action:none;cursor:grab}#gl.drag{cursor:grabbing}#gl.hov{cursor:pointer}`;
 
 // outer layers: faded away when you inspect something inside
-const SHELL = ['display', 'frame', 'backcover', 'mbcover', 'thermal', 'fp', 'frontcam', 'earpiece'];
+const DEMO_HIDE = ['display', 'frame', 'copper', 'fp', 'frontcams', 'earpiece', 'backcover', 'mbcover'];
+const SHELL = ['display', 'frame', 'backcover', 'mbcover', 'copper', 'fp', 'frontcams', 'earpiece'];
 const NAMES = {soc: 'SoC', mcp: 'Memory chip', rf865: 'RF chip', codec: 'Audio codec', fem2: 'Front-end 2', wifi: 'Wi-Fi chip', fem1: 'Front-end 1', pm7250: 'PM7250', pm7150a: 'PM7150A', pm7250b: 'PM7250B', qet: 'Envelope tracker', rearcams: 'Camera group', copper: 'Copper strip', sens_prox: 'Proximity + light', sens_imu: 'Motion sensors', ant_top: 'Top edge', ant_bl: 'Bottom left', ant_br: 'Bottom right', mic_bottom: 'Bottom (documented)', mic_top: 'Top (illustrative)'};
 const VIEWS = {front: {az: 0, el: 1.42, d: 4.0}, back: {az: Math.PI, el: -1.42, d: 4.0}, iso: {az: 0.55, el: 0.65, d: 3.7}, side: {az: Math.PI / 2, el: 0.1, d: 3.4}};
 
@@ -61,7 +63,8 @@ export async function runLive() {
   addEventListener('resize', fit);
   const toStage = (cx, cy) => { const r = app.getBoundingClientRect(); return [(cx - r.left) / scale, (cy - r.top) / scale]; };
 
-  const S = {T: 0, sel: null, hover: null, tab: 'what', explode: 0, exTarget: 0, backOff: false, dispOff: false, xray: false, iso: false, spin: false, showIll: true, follow: false, hidden: false, info: 'home', ptr: null};
+  const S = {T: 0, sel: null, hover: null, tab: 'what', explode: 0, exTarget: 0, backOff: false, dispOff: false, xray: false, iso: false, spin: false, showIll: true, mode: 'explore', want: {glow: {}}, follow: false, hidden: false, info: 'home', ptr: null};
+  const demos = createDemos({S, lap, fx, ui, glow: (id, v) => { S.want.glow[id] = Math.max(S.want.glow[id] || 0, v); }});
   const cam = {az: 0.55, el: 0.65, d: 3.7, tx: 0, ty: 0.02, tz: 0};
   const camT = {...cam};
   const home = () => ({tx: 0, ty: 0.03 - 0.12 * S.explode, tz: 0});
@@ -82,7 +85,7 @@ export async function runLive() {
     S.follow = true;
   };
   const refresh = () => {
-    if (!S.sel) { ui.info(S.info); ui.mark(null); return; }
+    if (!S.sel) { if (S.mode !== 'explore') ui.infoHtml(MODE_NAMES[S.mode], ...INTRO[S.mode]); else ui.info(S.info); ui.mark(null); return; }
     const e = entryOf(S.sel);
     const ps = partsOf(e);
     ui.inspect(e, S.tab, {parts: ps, part: S.sel, names: NAMES, pulled: !!parts[S.sel].pullT});
@@ -102,8 +105,16 @@ export async function runLive() {
     ui.set('disp', S.dispOff ? 'Screen on' : 'Screen off');
     ui.cls('back', 'on', S.backOff); ui.cls('disp', 'on', S.dispOff); ui.cls('xray', 'on', S.xray); ui.cls('iso', 'on', S.iso); ui.cls('spin', 'on', S.spin); ui.cls('ill', 'on', S.showIll);
   };
+  const enterMode = (mode) => {
+    S.mode = mode; S.sel = null; S.follow = false; S.info = 'home';
+    ui.setDock(mode === 'explore' ? '' : DOCKS[mode]());
+    ui.topOn(mode);
+    if (mode === 'explore') { S.exTarget = 0; setView('iso'); } else { S.exTarget = 0.55; demos.enter(); Object.assign(camT, {az: 0.2, el: 1.25, d: 2.3, tx: 0, ty: 0.04, tz: -0.5}); }
+    refresh(); sync();
+  };
   const act = (a, v) => {
-    if (a === 'info') { S.sel = null; S.info = v; refresh(); }
+    if (a === 'mode') enterMode(v);
+    else if (a === 'info') { if (S.mode !== 'explore') enterMode('explore'); S.sel = null; S.info = v; refresh(); ui.topOn(v); }
     else if (a === 'pick') selectEntry(v);
     else if (a === 'part') select(v);
     else if (a === 'tab') { S.tab = v; refresh(); if (v === 'links' && S.sel) fitLinks(); else if (S.sel) focusOn(S.sel); }
@@ -118,6 +129,7 @@ export async function runLive() {
     else if (a === 'pull') { const p = parts[S.sel]; if (p) { p.pullT = p.pullT ? 0 : 1; refresh(); } }
     else if (a === 'focus') { if (S.sel) focusOn(S.sel); }
     else if (a === 'clear') select(null);
+    else if (demos.act(a, v)) { /* handled by the demonstration */ }
     sync();
   };
   ui.root.addEventListener('click', (e) => {
@@ -181,7 +193,7 @@ export async function runLive() {
   addEventListener('keydown', (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey || /input|textarea/i.test(e.target.tagName)) return;
     const k = e.key.toLowerCase();
-    if (k === 'h') S.hidden = !S.hidden; else if (k === 'escape') select(null); else if (k === ' ') act('spin'); else return;
+    if (/^[1-4]$/.test(k)) enterMode(['explore', 'cpu', 'ram', 'ufs'][Number(k) - 1]); else if (k === 'h') S.hidden = !S.hidden; else if (k === 'escape') select(null); else if (k === ' ') act('spin'); else return;
     e.preventDefault();
   });
 
@@ -190,6 +202,7 @@ export async function runLive() {
   const bb = (id) => { const b = new THREE.Box3(); for (const m of parts[id].meshes) b.expandByObject(m); return b; };
   const ghostTarget = (p) => {
     let g = 0;
+    if (S.mode !== 'explore' && DEMO_HIDE.includes(p.id)) g = 1;
     const selE = S.sel ? entryOf(S.sel) : null;
     const mine = selE && p.entry === selE;
     if (!mine) {
@@ -218,15 +231,17 @@ export async function runLive() {
       const gt = ghostTarget(p);
       p.ghost += (gt - p.ghost) * (1 - Math.exp(-dt / 0.18));
       if (Math.abs(gt - p.ghost) < 0.004) p.ghost = gt;
-      p.hidden = !S.showIll && lap.ILL.includes(p.id);
-      p.glow += ((hovEntry && p.entry === hovEntry ? 0.12 : 0) - p.glow) * (1 - Math.exp(-dt / 0.15));
+      p.hidden = (!S.showIll || S.mode !== 'explore') && lap.ILL.includes(p.id);
+      p.glow += ((hovEntry && p.entry === hovEntry ? 0.12 : 0) + (S.want.glow[p.id] || 0) - p.glow) * (1 - Math.exp(-dt / 0.15));
     }
     if (S.spin && !drag) camT.az += dt * 0.5;
 
     // illustrative signal pulses: along the three flex cables, and along the links of the selected part
     fx.begin(S.T);
     anchors.length = 0;
-    const flexVis = parts.flex.ghost < 0.9;
+    S.want.glow = {};
+    if (S.mode !== 'explore') demos.tick(S.mode, dt);
+    const flexVis = parts.flex.ghost < 0.9 && S.mode === 'explore';
     if (flexVis) FLEX.forEach((p, i) => fx.flow(p, 4, 34, i === 1 ? '#3b9bff' : '#f2a31b', 1.4, {dir: i === 2 ? -1 : 1, follow: 'flex'}));
     if (S.sel && S.tab === 'links') {
       const a = project(S.sel);
@@ -247,7 +262,7 @@ export async function runLive() {
     const kc = 1 - Math.exp(-dt / 0.32);
     cam.az += wrap(camT.az - cam.az) * kc;
     for (const k of ['el', 'd', 'tx', 'ty', 'tz']) cam[k] += (camT[k] - cam[k]) * kc;
-    st.frame({explode: S.explode}, {...cam, sx: 0, sy: 0});
+    st.frame({explode: S.explode}, {...cam, sx: 0, sy: S.mode === 'explore' ? 0 : -120});
 
     if (S.ptr && !drag && Math.floor(S.T * 20) % 2 === 0) { const id = st.pick(S.ptr[0], S.ptr[1]); S.hover = id; canvas.classList.toggle('hov', !!id); } else if (!S.ptr) S.hover = null;
     const tip = ui.tip;
@@ -257,7 +272,7 @@ export async function runLive() {
       if (tip.textContent !== nm) tip.textContent = nm;
     } else tip.style.display = 'none';
     ui.root.style.display = S.hidden ? 'none' : '';
-    ui.hint(S.sel ? 'Pull out · Focus · Deselect in the inspector' : 'Drag to orbit · wheel to zoom · click a part');
+    ui.hint(S.mode !== 'explore' ? '' : S.sel ? 'Pull out · Focus · Deselect in the inspector' : 'Drag to orbit · wheel to zoom · click a part');
     ui.callouts(anchors);
     if (!window.SIM_SHOWN) { window.SIM_SHOWN = true; dispatchEvent(new Event('simframe')); }
     requestAnimationFrame(frame);
@@ -269,5 +284,5 @@ export async function runLive() {
   sync();
   refresh();
   warmComposer(st.renderer, st.composer, st.scene, st.camera).then(() => requestAnimationFrame(frame));
-  window.LIVE = {st, S, ui, lap, act, select, selectEntry, cam, camT, setView, tier: () => tier, gpu, setTier: (t) => { tier = clamp(t, 0, 2); applyTier(); }};
+  window.LIVE = {demos, enterMode, st, S, ui, lap, act, select, selectEntry, cam, camT, setView, tier: () => tier, gpu, setTier: (t) => { tier = clamp(t, 0, 2); applyTier(); }};
 }
