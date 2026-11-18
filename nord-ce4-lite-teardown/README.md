@@ -22,7 +22,7 @@ Every fact carries a tag; hover one for its meaning.
 | ILLUSTRATIVE | A conceptual model, not a hardware measurement |
 | UNKNOWN | Not documented anywhere I could verify; not drawn as fact |
 
-## What is built (roadmap phases 1 to 3)
+## What is built (all seven roadmap phases)
 
 - 360° orbit, spin, zoom and pan; front, back, three-quarter and side views.
 - Explode slider (display, frame, board, chips, battery, cameras, bottom board, back cover peel in order); *Back off*, *Screen off*, *X-ray*, *Isolate*; *Pull out* a part on its own.
@@ -30,19 +30,29 @@ Every fact carries a tag; hover one for its meaning.
 - The board outline, its cut-out and the chip positions are traced from the iFixit photos (`tools/trace.py`), scaled to an assumed 66.3 mm board width. The photos have no scale bar, so sizes are approximate. The photos themselves are not redistributed.
 - Chip identities (SM7250, Samsung KM8V8001JM, PM7250 and so on) are from the teardown text. Their mapping to the colour boxes in the photos follows iFixit's usual colour order, which is an inference. One chip iFixit lists as "Snapdragon 865 5G Mobile Platform" is shown as "RF?" because that label does not fit this phone.
 
-## Phase 3: three demonstrations (top bar, or keys 2 to 4)
+## The eleven demonstrations (top bar, or keys 1 to 9, 0, minus)
 
-| Demo | What it shows | Where the numbers come from |
-|---|---|---|
-| CPU runs | A 5-stage pipeline executing an ARM-style program, cycle by cycle (a load miss, a load-use stall, a branch mispredict; the answer 100 ends in x1), plus the **8 cores**: 2 big and 6 little, each with its own clock and load for four workloads | Pipeline: ILL teaching model. Core types and clock: THIRD-PARTY. Power: P = C·V²·f (STD) with an ILL curve |
-| CPU ↔ RAM | One cache-line access on LPDDR4X: ACT, tRCD, RD, read latency, a 16-beat burst of 32 B, with a live timing diagram | Structure and 4266 MT/s top grade: STD. RL, WL, tRCD: ILL typical. Your phone's real grade, bus width and timings are UNKNOWN |
-| UFS storage | An app reads or writes a file: descriptor in RAM, doorbell, link, flash translation, flash read or program, DMA, interrupt; 4 KiB, 1 MiB, 1 GiB | HS-Gear3 × 2 lanes = 1.16 GB/s ceiling and 32 slots: STD. Flash times and overhead: ILL. Your UFS 2.2 gear is not documented |
+Each is a **conceptual model tagged illustrative**, built on documented, standard or calculated numbers. None is a measurement of your phone. Where a real computation exists it is real arithmetic on made-up inputs.
 
-In the 3D view the display, frame and back cover fade, and the SoC and the Samsung memory package glow as each step runs. The two chips sit side by side, so the buses are drawn as **arcs between them (a visual aid, not the real traces)**.
+| Demo | What it shows | Real maths? | Numbers |
+|---|---|---|---|
+| Boot | Power key, boot ROM, memory training, firmware, verified boot, kernel, init and zygote, lock screen, with a boot log | no | Typical Qualcomm Android chain; your exact chain is UNKNOWN |
+| CPU runs | A 5-stage pipeline running an ARM-style program (load miss, load-use stall, mispredict; x1 ends at 100) and the 8 cores (2 big, 6 little) with DVFS | cycle-accurate schedule | Pipeline ILL; core types and clock THIRD-PARTY; P = C·V²·f STD |
+| CPU ↔ RAM | One cache-line access on LPDDR4X with a live timing diagram | clock counts | Structure and 4266 MT/s STD; latencies ILL; your grade UNKNOWN |
+| UFS storage | An app reads or writes a file: descriptor, doorbell, link, flash, DMA, interrupt | link time | HS-G3 × 2 = 1.16 GB/s STD; flash times ILL |
+| Touch | A finger on a 16 × 36 electrode grid, signal heat-map, the centroid, latency budget | **centroid maths** | Grid, rate, latencies ILL; your touch rate UNKNOWN |
+| Camera | Light, Bayer filter, read-out, ISP, compression, save | data sizes | 50 MP, 0.8 µm DOC; bit depth, ratio ILL |
+| Wi-Fi and 5G | Joining a network (both kinds) plus a free-space link budget | **path loss and Shannon limit** | Wi-Fi 5 and n78 DOC; powers and widths ILL |
+| GPS | Sky plot, ranges, and a **least-squares position solver** with DOP | **real solver** | 5 constellations DOC; satellite positions invented |
+| Charging | A generic power curve and the stages of a charge | integrated curve | 80 W DOC; the curve ILL; SUPERVOOC internals UNKNOWN |
+| Thermal | A passive phone as three thermal masses, heat tint on the chips, throttling | **RC model** | All parameters ILL; your cooling design UNKNOWN |
+| Frame | The 8.3 ms budget at 120 Hz, the pipeline from input to display, jank | budget, buffer and bandwidth | 120 Hz and 1080 × 2400 DOC; stage times ILL |
 
-## Not built yet
+In the 3D view the outer layers fade, and the SoC and the Samsung memory package glow as each step runs. The two chips sit side by side, so the buses are drawn as **arcs between them (a visual aid, not the real traces)**.
 
-Phases 4 to 7 are for the **phone**. The laptop (`../laptop-teardown/`) is separate and already has its six visualizations. For the phone, eight demonstrations remain: boot, touch, camera, Wi-Fi and 5G, GPS, charging, thermal, and rendering a frame (the *Roadmap* panel in the page shows which are built). All will be conceptual models on documented numbers and tagged illustrative.
+## Not built
+
+Nothing from the roadmap remains. What is deliberately not drawn is listed below.
 
 Drawn, but flagged because nothing documents them. They exist in every phone; where they sit in this one is unknown:
 

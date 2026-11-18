@@ -6,9 +6,9 @@ export const C = {ink: '#16181b', mute: '#6a7078', line: '#dfe2e6', red: '#e5342
 export const TABS = [['what', 'WHAT'], ['how', 'HOW'], ['links', 'LINKS'], ['learn', 'LEARN'], ['specs', 'SPECS'], ['yours', 'YOUR PHONE']];
 export const ROADMAP = [
   ['1', 'Exterior and exploded view', 'built'], ['2', 'Internal components and motherboard', 'built'], ['3', 'CPU, RAM and storage demonstrations', 'built'],
-  ['4', 'Battery and charging', 'planned'], ['5', 'Camera, display and sensors', 'planned'], ['6', 'Networking and communication', 'planned'], ['7', 'Android boot and app execution', 'planned'],
+  ['4', 'Battery and charging', 'built'], ['5', 'Camera, display and sensors', 'built'], ['6', 'Networking and communication', 'built'], ['7', 'Android boot and app execution', 'built'],
 ];
-export const BUILT = ['Snapdragon CPU execution', 'CPU-to-RAM communication', 'UFS read and write'];
+export const BUILT = ['Power-on and Android boot', 'Snapdragon CPU execution', 'CPU-to-RAM communication', 'UFS read and write', 'Touchscreen input', 'Camera capture and processing', 'Wi-Fi and 5G', 'GPS positioning', 'Battery charging and power management', 'Heat and thermal management', 'Rendering and displaying a frame'];
 export const DEMOS = ['Power-on and Android boot', 'Snapdragon CPU execution', 'CPU-to-RAM communication', 'UFS read and write', 'Touchscreen input', 'Camera capture and processing', 'Wi-Fi and 5G', 'GPS positioning', 'Battery charging and power management', 'Heat and thermal management', 'Rendering and displaying a frame'];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -25,8 +25,9 @@ const CSS = `
 .ttl{position:absolute;left:20px;top:14px;pointer-events:none}.ttl .tbar{width:36px;height:3px;background:${C.red};margin-bottom:7px}
 .ttl h1{margin:0;font-size:20px;font-weight:700;line-height:1.1}.ttl h1 span{color:${C.red}}
 .ttl p{margin:5px 0 0;font-size:9.5px;font-weight:600;letter-spacing:1.1px;color:${C.mute};text-transform:uppercase}
-.top{position:absolute;left:322px;top:14px;width:930px;display:flex;gap:4px;pointer-events:auto}.top .btn{flex:1;height:30px;font-size:10.5px}
-.legend{position:absolute;left:322px;top:52px;width:930px;text-align:center;pointer-events:auto;font-size:10px;color:${C.mute}}
+.top{position:absolute;left:322px;top:12px;width:930px;display:flex;gap:3px;pointer-events:auto}.top .btn{flex:1;height:28px;padding:0 3px;font-size:9.6px;letter-spacing:.4px}
+.top2{position:absolute;left:322px;top:44px;display:flex;gap:4px;pointer-events:auto}
+.legend{position:absolute;left:500px;top:46px;width:752px;text-align:right;pointer-events:auto;font-size:10px;color:${C.mute}}
 .list{left:16px;top:92px;width:292px;height:792px;overflow:auto;padding:8px 0 10px}
 .list .g{padding:9px 14px 4px}.list .it{display:flex;align-items:center;gap:8px;padding:5px 14px;cursor:pointer;font-size:12.5px;font-weight:500;border-left:3px solid transparent}
 .list .it:hover{background:#f1f2f4}.list .it.sel{background:#f4e9e8;border-left-color:${C.red};font-weight:700}
@@ -73,8 +74,8 @@ export function createConsole(app) {
   app.appendChild(ui);
   const add = (h) => { const n = el(h); ui.appendChild(n); return n; };
   add(`<div class="ttl"><div class="tbar"></div><h1>Phone <span>·</span> Teardown</h1><p>Reference: Nord (2020) · yours: Nord CE4 Lite 5G</p></div>`);
-  add(`<div class="top"><div class="btn on" data-act="mode" data-v="explore">Explore</div><div class="btn" data-act="mode" data-v="cpu">CPU runs</div><div class="btn" data-act="mode" data-v="ram">CPU ↔ RAM</div><div class="btn" data-act="mode" data-v="ufs">UFS storage</div><div class="btn" data-act="info" data-v="compare">Vs your phone</div><div class="btn" data-act="info" data-v="roadmap">Roadmap</div></div>`);
-  add(`<div class="legend">${['DOC', 'TD', 'APX', '3RD', 'STD', 'CALC', 'ILL', 'UNK'].map((t) => tag(t)).join('')} &nbsp; hover a tag · <b style="color:#7a5af0">violet parts</b> are illustrative placements</div>`);
+  add(`<div class="top"><div class="btn on" data-act="mode" data-v="explore">Explore</div><div class="btn" data-act="mode" data-v="boot">Boot</div><div class="btn" data-act="mode" data-v="cpu">CPU</div><div class="btn" data-act="mode" data-v="ram">RAM</div><div class="btn" data-act="mode" data-v="ufs">UFS</div><div class="btn" data-act="mode" data-v="touch">Touch</div><div class="btn" data-act="mode" data-v="camera">Camera</div><div class="btn" data-act="mode" data-v="net">Wi-Fi · 5G</div><div class="btn" data-act="mode" data-v="gps">GPS</div><div class="btn" data-act="mode" data-v="charge">Charging</div><div class="btn" data-act="mode" data-v="thermal">Thermal</div><div class="btn" data-act="mode" data-v="frame">Frame</div></div><div class="top2"><div class="btn sm" data-act="info" data-v="compare">Vs your phone</div><div class="btn sm" data-act="info" data-v="roadmap">Roadmap</div></div>`);
+  add(`<div class="legend">${['DOC', 'TD', 'APX', '3RD', 'STD', 'CALC', 'ILL', 'UNK'].map((t) => tag(t)).join('')} &nbsp; <b style="color:#7a5af0">violet</b> = illustrative part</div>`);
   const list = add('<div class="pn list"></div>');
   list.innerHTML = GROUPS.map(([g, ids]) => `<div class="g lcap">${g}</div>${ids.map((id) => `<div class="it" data-act="pick" data-v="${id}" data-id="${id}"><i></i>${esc(CATALOG[id].name)}</div>`).join('')}`).join('');
   const insp = add('<div class="pn insp"></div>');
